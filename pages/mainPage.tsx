@@ -12,7 +12,7 @@ import Card from '../components/Card';
 import PhoneNumberVerification from '../components/Verification/PhoneNumber';
 import SafetyCheck from '../components/Verification/SafetyCheck';
 
-const API_KEY = "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";
+const API_KEY = "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";
 
 // Define the props for the PromptForm component
 interface PromptFormProps {

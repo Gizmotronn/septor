@@ -7,7 +7,6 @@ const SafetyChec1 = () => {
 
   const checkSafety = async () => {
     try {
-      // Replace 'YOUR_API_KEY' with your actual VirusTotal API key
       const apiKey = '70e735639aa1bb48201bacd6d94ead8c6d523de7b20cd79d37f9cfa0a2f717c0';
 
       // Step 1: Send a POST request to create a URL scan

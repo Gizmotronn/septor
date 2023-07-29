@@ -10,7 +10,7 @@ import {
 } from '@chatscope/chat-ui-kit-react';
 import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
 
-const API_KEY = "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";
+const API_KEY = "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";
 
 const ChatGPTComponent: React.FC = () => {
   const [messages, setMessages] = useState<Array<any>>([

@@ -6,7 +6,7 @@ const ChatGPTComponent: React.FC = () => {
 
   const handleSendMessage = async () => {
     try {
-      const apiKey = 'sk-'; // Replace with your OpenAI API key GtZWXRt8zSOWs83eny13T3BlbkFJYsPay5TZpG7MUta1j3yr
+      const apiKey = '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'; // Replace with your OpenAI API key GtZWXRt8zSOWs83eny13T3BlbkFJYsPay5TZpG7MUta1j3yr
       const apiUrl = 'https://api.openai.com/v1/engines/davinci-codex/completions'; // The endpoint for ChatGPT
 
       const response = await fetch(apiUrl, {

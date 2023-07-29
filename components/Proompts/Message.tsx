@@ -8,7 +8,7 @@ import {
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react';
 
-const API_KEY = "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";
+const API_KEY = "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";
 
 const GptBot: React.FC = () => {
   const [messages, setMessages] = useState<Array<any>>([
