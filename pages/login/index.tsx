@@ -1,7 +1,7 @@
 import { Auth, ThemeSupa } from '@supabase/auth-ui-react';
 import React from 'react';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
-import PromptForm from '../../components/PromptCheck';
+import PromptForm from '../../components/Proompts/PromptCheck';
 
 const Login = () => {
     const session = useSession();
@@ -22,4 +22,3 @@ const Login = () => {
 }
 
 export default Login;
-// https://github.com/smallbr21/intersep

@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
 import openai
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Replace with your OpenAI API key
 api_key = "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"
