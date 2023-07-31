@@ -1,21 +1,24 @@
 import { useState } from 'react';
 
 const ChatGPTComponent: React.FC = () => {
-  const [message, setMessage] = useState<string>('');
-  const [response, setResponse] = useState<string>('');
+  const [question, setQuestion] = useState<string>('');
+  const [answer, setAnswer] = useState<string>('');
 
   const handleSendMessage = async () => {
     try {
-        // const response = await fetch('/api/check_listen', {
-        const response = await fetch('http://127.0.0.1:5000/check_listen', {
-            method: 'GET',
-        });
+      const response = await fetch('http://127.0.0.1:5000/ask', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question }), // Send the question as JSON
+      });
 
       if (response.ok) {
         const data = await response.json();
-        setResponse(data.reply);
+        setAnswer(data.answer);
       } else {
-        console.error('Error sending message to ChatGPT');
+        console.error('Error sending question to Flask:', response.statusText);
       }
     } catch (error) {
       console.error('Error:', error);
@@ -26,13 +29,13 @@ const ChatGPTComponent: React.FC = () => {
     <div>
       <input
         type="text"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Type your message..."
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        placeholder="Type your question..."
       />
       <button onClick={handleSendMessage}>Send</button>
-      <p>Response from ChatGPT:</p>
-      <div>{response}</div>
+      <p>Answer from ChatGPT:</p>
+      <div>{answer}</div>
     </div>
   );
 };
