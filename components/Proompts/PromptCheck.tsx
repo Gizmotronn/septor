@@ -7,7 +7,7 @@ const PromptForm: React.FC = () => {
   const supabase = useSupabaseClient();
   const session = useSession();
 
-  useEffect(() => {
+  useEffect(() => { 
     fetchUserCredits();
   }, []);
 

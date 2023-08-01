@@ -1,24 +1,32 @@
 import { useState } from 'react';
 
 const ChatGPTComponent: React.FC = () => {
-  const [question, setQuestion] = useState<string>('');
-  const [answer, setAnswer] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
+  const [response, setResponse] = useState<string | null>(null);
 
   const handleSendMessage = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/ask', {
+      const apiKey = 'sk-'; // Replace with your OpenAI API key GtZWXRt8zSOWs83eny13T3BlbkFJYsPay5TZpG7MUta1j3yr
+      const apiUrl = 'https://api.openai.com/v1/engines/davinci-codex/completions'; // The endpoint for ChatGPT
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
         },
-        body: JSON.stringify({ question }), // Send the question as JSON
+        body: JSON.stringify({
+          prompt: message,
+          max_tokens: 50, // Adjust the max tokens as needed
+        }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setAnswer(data.answer);
+        console.log('ChatGPT Response:', data.choices[0]?.text); // Log the response
+        setResponse(data.choices[0]?.text); // Set the response from ChatGPT
       } else {
-        console.error('Error sending question to Flask:', response.statusText);
+        console.error('Error sending message to ChatGPT');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -29,13 +37,13 @@ const ChatGPTComponent: React.FC = () => {
     <div>
       <input
         type="text"
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        placeholder="Type your question..."
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Type your message..."
       />
       <button onClick={handleSendMessage}>Send</button>
-      <p>Answer from ChatGPT:</p>
-      <div>{answer}</div>
+      <p>Response from ChatGPT:</p>
+      <div>{response}</div>
     </div>
   );
 };
