@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
-const PromptForm: React.FC = () => {
+interface PromptFormProps {
+  onSendToChatGPT: (message: string) => void;
+}
+
+const PromptForm: React.FC<PromptFormProps> = ({ onSendToChatGPT }) => {
   const [promptText, setPromptText] = useState<string>('');
   const [userCredits, setUserCredits] = useState<number>(0);
   const supabase = useSupabaseClient();
   const session = useSession();
 
-  useEffect(() => { 
+  useEffect(() => {
     fetchUserCredits();
   }, []);
 
@@ -38,19 +42,19 @@ const PromptForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     if (userCredits < 1) {
       alert('You have insufficient credits to make a prompt.');
       return;
     }
-  
+
     const extractedUrls = extractUrls(promptText);
     const extractedPhoneNumbers = extractPhoneNumbers(promptText);
-  
+
     // Create a new prompt entry
     const { data: promptData, error: promptError } = await supabase
       .from('proompts')
-      .insert([
+      .upsert([
         {
           prompt_text: promptText,
           user_id: session?.user?.id,
@@ -58,15 +62,15 @@ const PromptForm: React.FC = () => {
           phone_number: extractedPhoneNumbers,
         },
       ]);
-  
+
     if (promptError) {
       console.error('Error creating prompt:', promptError);
       return;
     }
-  
+
     console.log('Prompt created successfully:', promptData);
     setPromptText('');
-  
+
     // Update user's credits in the profiles table
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
@@ -76,16 +80,17 @@ const PromptForm: React.FC = () => {
           credits: userCredits - 1,
         },
       ]);
-  
+
     if (profileError) {
       console.error('Error updating user credits:', profileError);
       return;
     }
-  
+
     console.log('User credits updated:', profileData);
-    console.log('☢️ Unknown ☢️')
-    setUserCredits(userCredits - 1);
-  };  
+
+    // Send the user's message to ChatGPT
+    onSendToChatGPT(promptText);
+  };
 
   return (
     <div>

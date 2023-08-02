@@ -14,8 +14,7 @@ const Login = () => {
                 <div className='w-80%'><Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa}} theme='dark' /></div>//</>
             ) : (
                 // <SocialGraphHome />
-                <><p>{session?.user?.id}</p>
-                <PromptForm /></>
+                <p>{session?.user?.id}</p>
             )}
         </div>
     );

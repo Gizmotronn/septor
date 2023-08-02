@@ -3,6 +3,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import PromptForm from "../components/Proompts/PromptCheck";
 import ChatGPTComponent from "../components/Proompts/ChatConnection";
+import GptBot from "../components/Proompts/Message";
 
 export default function Home() {
     const session = useSession();
@@ -12,8 +13,10 @@ export default function Home() {
         return (
             <>
                 <p>{session?.user?.id}</p>
-                <PromptForm />
-                <ChatGPTComponent />
+                {/* <PromptForm /> */}
+                {/* <ChatGPTComponent /> */}
+                <GptBot />
+                {/* <ChatGPTComponent /> */}
             </>
         )
     }
