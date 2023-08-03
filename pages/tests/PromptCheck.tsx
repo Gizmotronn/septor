@@ -8,5 +8,5 @@ export default function PromptCheckPage () {
         // <PromptForm />
         // <ScamChecker />
         <ParentComponent />
-    )
-}
+    );
+};

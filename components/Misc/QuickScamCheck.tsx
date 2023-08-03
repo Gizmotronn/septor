@@ -115,7 +115,7 @@ const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
   const createPromptEntry = async (text: string, urls: string[], phoneNumbers: string[]) => {
     if (session?.user) {
       try {
-        await supabase.from('prompts').upsert([
+        await supabase.from('proompts').upsert([
           {
             user_id: session.user.id,
             prompt_text: text,

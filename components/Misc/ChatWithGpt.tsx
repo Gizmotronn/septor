@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { MainContainer, ChatContainer, MessageList, TypingIndicator, Message, MessageInput } from '@chatscope/chat-ui-kit-react';
 
-const API_KEY = "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";
+const API_KEY = "sk-";
 
 interface ChatWithGptProps {
     message: string;
 }
 
 const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
-  const [messages, setMessages] = useState<any[]>([
-    {
-      message: 'Enter your prompt here',
-      sentTime: 'just now',
-      sender: 'ChatGPT',
-    },
-  ]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
@@ -25,16 +19,15 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
 
   const handleSendRequest = async (message: string) => {
     const newMessage = {
-      message: message,
+      message: message + 'I received this sms. is it likely to be a scam and what are the 5 reasons for this? If it could be a scam, please also provide 5 tips for what to do. Please also provide a hypothetical probability from 0 to 100 of it being a scam. The total response should be less than 200 words.',
       direction: 'outgoing',
       sender: 'user',
     };
 
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
     setIsTyping(true);
 
     try {
-      const response = await processMessageToChatGPT([...messages, newMessage]);
+      const response = await processMessageToChatGPT(newMessage);
       const content = response.choices[0]?.message?.content;
       if (content) {
         const chatGPTResponse = {
@@ -50,17 +43,12 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
     }
   };
 
-  async function processMessageToChatGPT(chatMessages: any[]) {
-    const apiMessages = chatMessages.map((messageObject) => {
-      const role = messageObject.sender === 'ChatGPT' ? 'assistant' : 'user';
-      return { role, content: messageObject.message };
-    });
-
+  async function processMessageToChatGPT(messageObject: any) {
     const apiRequestBody = {
       model: 'gpt-3.5-turbo',
       messages: [
         { role: 'system', content: "I'm a Student using ChatGPT for learning" },
-        ...apiMessages,
+        { role: 'user', content: messageObject.message },
       ],
     };
 
@@ -77,23 +65,25 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
   }
 
   return (
-    <div className="App">
-      <div style={{ position: 'relative', height: '800px', width: '700px' }}>
-        <MainContainer>
-          <ChatContainer>
-            <MessageList
-              scrollBehavior="smooth"
-              typingIndicator={isTyping ? <TypingIndicator content="ChatGPT is typing" /> : null}
-            >
-              {messages.map((message, i) => {
-                console.log(message);
-                return <Message key={i} model={message} />;
-              })}
-            </MessageList>
-            <MessageInput placeholder="Send a Message" onSend={handleSendRequest} />
-          </ChatContainer>
-        </MainContainer>
-      </div>
+    <div className="bg-gray-100 p-4 rounded-lg shadow-md">
+      <MainContainer>
+        <ChatContainer>
+          <MessageList
+            scrollBehavior="smooth"
+            typingIndicator={isTyping ? <TypingIndicator content="ChatGPT is typing" /> : null}
+            className="max-h-64 overflow-y-auto border rounded bg-white p-2"
+          >
+            {messages.map((message, i) => {
+              return <Message key={i} model={message} />;
+            })}
+          </MessageList>
+          <MessageInput
+            placeholder="Send a Message"
+            onSend={handleSendRequest}
+            className="mt-4"
+          />
+        </ChatContainer>
+      </MainContainer>
     </div>
   );
 };

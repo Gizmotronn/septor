@@ -12,7 +12,6 @@ const ParentComponent: React.FC = () => {
 
   return (
     <div>
-      <h1>Scam Checker and Chat</h1>
       <ScamChecker onMessageChange={handleMessageFromScamChecker} />
       <ChatWithGpt message={scamMessage} />
     </div>
