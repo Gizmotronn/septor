@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MainContainer, ChatContainer, MessageList, TypingIndicator, Message, MessageInput } from '@chatscope/chat-ui-kit-react';
 
-const API_KEY = "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";
+const API_KEY = "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";
 
 interface ChatWithGptProps {
     message: string;
@@ -10,6 +10,8 @@ interface ChatWithGptProps {
 const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [urlSafetyScore, setUrlSafetyScore] = useState<number | null>(null);
+  const [phoneNumberSafetyScore, setPhoneNumberSafetyScore] = useState<number | null>(null);
 
   useEffect(() => {
     if (message) {
@@ -34,6 +36,19 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
           message: content,
           sender: 'OpenAi',
         };
+
+        // Extract hypothetical probability from the response
+        const probabilityMatch = content.match(/(\d+)%/);
+        if (probabilityMatch) {
+          const probability = parseInt(probabilityMatch[1]);
+          // Calculate URL safety score
+          const urlSafetyScore = (100 - probability) * 2.0;
+          setUrlSafetyScore(urlSafetyScore);
+          // Calculate phone number safety score
+          const phoneNumberSafetyScore = urlSafetyScore * 1.4;
+          setPhoneNumberSafetyScore(phoneNumberSafetyScore);
+        }
+
         setMessages((prevMessages) => [...prevMessages, chatGPTResponse]);
       }
     } catch (error) {
@@ -65,7 +80,7 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
   }
 
   return (
-    <div className="p-4 rounded-lg shadow-md">
+    <div className="bg-gray-100 p-4 rounded-lg shadow-md">
       <MainContainer>
         <ChatContainer>
           <MessageList
@@ -76,6 +91,12 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
             {messages.map((message, i) => {
               return <Message key={i} model={message} />;
             })}
+            {urlSafetyScore !== null && phoneNumberSafetyScore !== null && (
+              <div className="mt-4">
+                <p className="text-lg font-semibold">URL Safety Score: {urlSafetyScore}</p>
+                <p className="text-lg font-semibold">Phone Number Safety Score: {phoneNumberSafetyScore}</p>
+              </div>
+            )}
           </MessageList>
           <MessageInput
             placeholder="Send a Message"
