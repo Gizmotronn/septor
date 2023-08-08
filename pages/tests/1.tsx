@@ -8,9 +8,9 @@ import {
   MessageInput,
   TypingIndicator,
 } from '@chatscope/chat-ui-kit-react';
-import Card from '../components/Card';
-import PhoneNumberVerification from '../components/Verification/PhoneNumber';
-import SafetyCheck from '../components/Verification/SafetyCheck';
+import Card from '../../components/Card';
+import PhoneNumberVerification from '../../components/Verification/PhoneNumber';
+import SafetyCheck2 from '../../components/Verification//Tests/1';
 
 const API_KEY = "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";
 
@@ -63,7 +63,7 @@ const PromptForm: React.FC<PromptFormProps> = ({ onSendToChatGPT }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (userCredits < 0) {
+    if (userCredits < 1) {
       alert('You have insufficient credits to make a prompt.');
       return;
     }
@@ -237,7 +237,7 @@ const MainPage: React.FC = () => {
       {/* Render the GptBot component */}
       <Card noPadding={false}><GptBot /></Card>
       <Card noPadding={true}><PhoneNumberVerification /></Card>
-      <SafetyCheck />
+      <SafetyCheck2 />
     </div>
   );
 };

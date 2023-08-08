@@ -85,7 +85,7 @@ const SafetyChec1 = () => {
   );
 };
 
-function SafetyCheck() {
+function SafetyCheck2() {
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState('');
@@ -97,11 +97,11 @@ function SafetyCheck() {
     // Simulate an API request by waiting for 4 seconds
     setTimeout(() => {
       // Mock response data
-      const safetyScore = 89;
+      const safetyScore = 43;
       const provider = 'CMC Threat Intelligence';
 
       // Update the result state
-      setResult(`Rated Harmless by ${provider}, safety score ${safetyScore}/100`);
+      setResult(`Rated Harmful by ${provider}, safety score ${safetyScore}/100`);
       setIsLoading(false);
     }, 4000); // Delay for 4 seconds
   };
@@ -128,4 +128,4 @@ function SafetyCheck() {
   );
 }
 
-export default SafetyCheck;
+export default SafetyCheck2;
