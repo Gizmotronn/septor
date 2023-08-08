@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import axios from 'axios';
 
 interface ScamCheckerProps {
-    onMessageChange: (message: string) => void;
+  onMessageChange: (message: string) => void;
 }
 
 const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
@@ -12,6 +13,7 @@ const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
   const [messageInput, setMessageInput] = useState<string>('');
   const [userCredits, setUserCredits] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [safetyScore, setSafetyScore] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchUserCredits = async () => {
@@ -62,6 +64,40 @@ const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
 
     setMessage('Prompt created and credits deducted.');
     onMessageChange(messageInput);
+
+    // Calculate safety score from VirusTotal
+    const safetyScore = await fetchSafetyScore(urls[0]); // Assuming only one URL for simplicity
+    setSafetyScore(safetyScore);
+  };
+
+  const fetchSafetyScore = async (url: string) => {
+    const base64Url = btoa(url);
+    const virusTotalApiKey = '70e735639aa1bb48201bacd6d94ead8c6d523de7b20cd79d37f9cfa0a2f717c0';
+
+    const options = {
+      method: 'GET',
+      url: `https://www.virustotal.com/api/v3/urls/${base64Url}`,
+      headers: {
+        accept: 'application/json',
+        'x-apikey': virusTotalApiKey,
+      },
+    };
+
+    try {
+      const response = await axios.request(options);
+      const analysisStats = response.data.data.attributes.last_analysis_stats;
+      const harmlessPercent = analysisStats.harmless / 100;
+      const maliciousPercent = analysisStats.malicious / 100;
+      const suspiciousPercent = analysisStats.suspicious / 100;
+
+      // Calculate safety score based on your formula
+      const score = harmlessPercent * 0.99 + (maliciousPercent * 0.5 * harmlessPercent * 0.5);
+
+      return score * 100; // Convert to percentage
+    } catch (error) {
+      console.error('Error fetching safety score:', error);
+      return null;
+    }
   };
 
   const extractUrls = (text: string) => {
@@ -79,7 +115,7 @@ const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
   const createPromptEntry = async (text: string, urls: string[], phoneNumbers: string[]) => {
     if (session?.user) {
       try {
-        await supabase.from('proompts').upsert([
+        await supabase.from('prompts').upsert([
           {
             user_id: session.user.id,
             prompt_text: text,
@@ -88,7 +124,7 @@ const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
           },
         ]);
         console.log('Prompt entry created successfully.');
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error creating prompt entry:', error.message);
       }
     }
@@ -114,6 +150,9 @@ const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
         Check
       </button>
       {message && <p className="mt-4 text-xl text-green-500">{message}</p>}
+      {safetyScore !== null && (
+        <p className="mt-4 text-xl">Safety Score: {safetyScore.toFixed(2)}%</p>
+      )}
     </div>
   );
 };

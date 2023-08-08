@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MainContainer, ChatContainer, MessageList, TypingIndicator, Message, MessageInput } from '@chatscope/chat-ui-kit-react';
 
-const API_KEY = "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";
+const API_KEY = "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";
 
 interface ChatWithGptProps {
     message: string;
