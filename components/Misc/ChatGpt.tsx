@@ -1,64 +1,92 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import { MainContainer, ChatContainer, MessageList, TypingIndicator, Message, MessageInput } from "@chatscope/chat-ui-kit-react";
 
-interface ChatGptProps {
-  onMessageReceived: (response: string) => void;
-}
+const API_KEY = "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";
 
-const ChatGpt: React.FC<ChatGptProps> = ({ onMessageReceived }) => {
-  const [userMessage, setUserMessage] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    // Simulate ChatGPT response after 2 seconds (replace with your actual ChatGPT integration)
-    const simulateChatGptResponse = async () => {
-      setIsLoading(true);
-      // Send userMessage to ChatGPT and receive a response
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userMessage }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const chatGptResponse = data.response; // Replace 'response' with the actual field in your API response
-        onMessageReceived(chatGptResponse);
-      } else {
-        onMessageReceived('Error communicating with ChatGPT');
+// Define the GptBot component
+export const GptBot: React.FC = () => {
+    const [messages, setMessages] = useState<Array<any>>([
+      {
+        message: "Enter your prompt here",
+        sentTime: "just now",
+        sender: "ChatGPT",
+      },
+    ]);
+    const [isTyping, setIsTyping] = useState(false);
+  
+    // Handle sending a message to ChatGPT
+    const handleSendRequest = async (message: string) => {
+      const newMessage = {
+        message: message + ' One of our users received this message via text or email, does this look like a scam?',
+        direction: 'outgoing',
+        sender: "user",
+      };
+  
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      setIsTyping(true);
+  
+      try {
+        const response = await processMessageToChatGPT([...messages, newMessage]);
+        const content = response.choices[0]?.message?.content;
+        if (content) {
+          const chatGPTResponse = {
+            message: content,
+            sender: "OpenAi",
+          };
+          setMessages((prevMessages) => [...prevMessages, chatGPTResponse]);
+        }
+      } catch (error) {
+        console.error("Error processing message:", error);
+      } finally {
+        setIsTyping(false);
       }
-
-      setIsLoading(false);
     };
-
-    if (userMessage.trim() !== '') {
-      simulateChatGptResponse();
+  
+    // Process messages and send them to ChatGPT
+    async function processMessageToChatGPT(chatMessages: Array<any>) {
+      const apiMessages = chatMessages.map((messageObject) => {
+        const role = messageObject.sender === "ChatGPT" ? "assistant" : "user";
+        return { role, content: messageObject.message };
+      });
+  
+      const apiRequestBody = {
+        "model": "gpt-3.5-turbo",
+        "messages": [
+          { role: "system", content: "I'm a Student using ChatGPT for learning" },
+          ...apiMessages,
+        ],
+      };
+  
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(apiRequestBody),
+      });
+  
+      return response.json();
     }
-  }, [userMessage, onMessageReceived]);
-
-  const handleUserMessageChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setUserMessage(event.target.value);
+  
+    return (
+      <div className="App">
+        <div style={{ position: "relative", height: "800px", width: "700px" }}>
+          <MainContainer>
+            <ChatContainer>
+              <MessageList
+                scrollBehavior="smooth"
+                typingIndicator={isTyping ? <TypingIndicator content="ChatGPT is typing" /> : null}
+              >
+                {messages.map((message, i) => {
+                  console.log(message);
+                  return <Message key={i} model={message} />;
+                })}
+              </MessageList>
+              <MessageInput placeholder="Send a Message" onSend={handleSendRequest} />
+            </ChatContainer>
+          </MainContainer>
+        </div>
+      </div>
+    );
   };
-
-  return (
-    <div className="w-full max-w-screen-lg mx-auto p-4 text-center">
-      <h2 className="text-4xl font-bold mb-6 text-primary">ChatGPT</h2>
-      <textarea
-        className="w-full px-4 py-2 mb-4 text-xl rounded-lg border border-gray-300 focus:outline-none focus:border-primary"
-        placeholder="Type your message..."
-        value={userMessage}
-        onChange={handleUserMessageChange}
-        rows={4}
-      />
-      <button
-        className="px-6 py-3 text-xl font-bold text-white bg-primary rounded-lg hover:bg-primary-dark focus:outline-none focus:bg-primary-dark"
-        disabled={isLoading}
-      >
-        {isLoading ? 'Sending...' : 'Send'}
-      </button>
-    </div>
-  );
-};
-
-export default ChatGpt;

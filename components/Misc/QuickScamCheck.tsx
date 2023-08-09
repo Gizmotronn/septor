@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
-const ScamChecker: React.FC = () => {
+interface ScamCheckerProps {
+    onMessageChange: (message: string) => void;
+}
+
+const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
   const supabase = useSupabaseClient();
   const session = useSession();
 
@@ -57,6 +61,7 @@ const ScamChecker: React.FC = () => {
     await createPromptEntry(messageInput, urls, phoneNumbers);
 
     setMessage('Prompt created and credits deducted.');
+    onMessageChange(messageInput);
   };
 
   const extractUrls = (text: string) => {
