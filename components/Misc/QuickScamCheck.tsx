@@ -23,7 +23,7 @@ const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
           .select('credits')
           .eq('id', session.user.id)
           .single();
-
+ 
         if (error) {
           console.error('Error fetching user credits:', error.message);
         } else if (data) {

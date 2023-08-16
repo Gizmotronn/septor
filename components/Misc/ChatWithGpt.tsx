@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MainContainer, ChatContainer, MessageList, TypingIndicator, Message, MessageInput } from '@chatscope/chat-ui-kit-react';
 
-const API_KEY = "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";
+const API_KEY = "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";
 
 interface ChatWithGptProps {
     message: string;
@@ -93,8 +93,8 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
             })}
             {urlSafetyScore !== null && phoneNumberSafetyScore !== null && (
               <div className="mt-4">
-                <p className="text-lg font-semibold">URL Safety Score: {urlSafetyScore}</p>
-                <p className="text-lg font-semibold">Phone Number Safety Score: {phoneNumberSafetyScore}</p>
+                <p className="text-lg font-semibold">URL Safety Score: {urlSafetyScore}%</p>
+                <p className="text-lg font-semibold">Phone Number Safety Score: {phoneNumberSafetyScore}%</p>
               </div>
             )}
           </MessageList>

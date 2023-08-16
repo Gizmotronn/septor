@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import PromptForm from "../components/Proompts/PromptCheck";
 import ChatGPTComponent from "../components/Proompts/ChatConnection";
 import GptBot from "../components/Proompts/Message";
+import Login from "./login";
+import PromptCheckPage from "./tests/PromptCheck";
 
 export default function Home() {
     const session = useSession();
@@ -12,16 +14,12 @@ export default function Home() {
     if (session) {
         return (
             <>
-                <p>{session?.user?.id}</p>
-                {/* <PromptForm /> */}
-                {/* <ChatGPTComponent /> */}
-                <GptBot />
-                {/* <ChatGPTComponent /> */}
+                <PromptCheckPage />
             </>
         )
     }
 
     return (
-        <p>Please log in.</p>
+        <Login />
     )
 }
