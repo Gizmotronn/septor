@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MainContainer, ChatContainer, MessageList, TypingIndicator, Message, MessageInput } from '@chatscope/chat-ui-kit-react';
 
-const API_KEY = "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";
+const API_KEY = "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";
 
 interface ChatWithGptProps {
     message: string;
@@ -80,31 +80,33 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
   }
 
   return (
-    <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-      <MainContainer>
-        <ChatContainer>
-          <MessageList
-            scrollBehavior="smooth"
-            typingIndicator={isTyping ? <TypingIndicator content="ChatGPT is typing" /> : null}
-            className="max-h-64 overflow-y-auto border rounded bg-white p-2"
-          >
-            {messages.map((message, i) => {
-              return <Message key={i} model={message} />;
-            })}
-            {urlSafetyScore !== null && phoneNumberSafetyScore !== null && (
-              <div className="mt-4">
-                <p className="text-lg font-semibold">URL Safety Score: {urlSafetyScore}%</p>
-                <p className="text-lg font-semibold">Phone Number Safety Score: {phoneNumberSafetyScore}%</p>
-              </div>
-            )}
-          </MessageList>
-          <MessageInput
-            placeholder="Send a Message"
-            onSend={handleSendRequest}
-            className="mt-4"
-          />
-        </ChatContainer>
-      </MainContainer>
+    <div className='w-full max-w-screen-lg mx-auto p-4 text-center'>
+      <div className="p-4 rounded-lg">
+        <MainContainer>
+          <ChatContainer>
+            <MessageList
+              scrollBehavior="smooth"
+              typingIndicator={isTyping ? <TypingIndicator content="ChatGPT is typing" /> : null}
+              className="max-h-64 overflow-y-auto rounded bg-white p-2"
+            >
+              {messages.map((message, i) => {
+                return <Message key={i} model={message} />;
+              })}
+              {urlSafetyScore !== null && phoneNumberSafetyScore !== null && (
+                <div className="mt-4">
+                  <p className="text-lg font-semibold">URL Safety Score: {urlSafetyScore}%</p>
+                  <p className="text-lg font-semibold">Phone Number Safety Score: {phoneNumberSafetyScore}%</p>
+                </div>
+              )}
+            </MessageList>
+            <MessageInput
+              placeholder="Send a Message"
+              onSend={handleSendRequest}
+              className="mt-4"
+            />
+          </ChatContainer>
+        </MainContainer>
+      </div>
     </div>
   );
 };

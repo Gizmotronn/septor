@@ -14,6 +14,7 @@ const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
   const [userCredits, setUserCredits] = useState<number | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [safetyScore, setSafetyScore] = useState<number | null>(null);
+  const [newUserCredits, setNewUserCredits] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchUserCredits = async () => {
@@ -25,7 +26,7 @@ const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
           .single();
  
         if (error) {
-          console.error('Error fetching user credits:', error.message);
+          console.error('Error fetching user credits: ', error.message);
         } else if (data) {
           setUserCredits(data.credits);
         }
@@ -34,6 +35,30 @@ const ScamChecker: React.FC<ScamCheckerProps> = ({ onMessageChange }) => {
 
     fetchUserCredits();
   }, [session]);
+
+  const subtractUserCredit = async () => {
+    if (session?.user) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('credits')
+        .eq('id', session?.user?.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user credits: ', error.message);
+      } else if (data) {
+        setNewUserCredits(data.credits - 1);
+      }
+    }
+
+    await supabase.from('profiles').upsert([
+      {
+        user_id: session?.user?.id,
+        credits: newUserCredits,
+      },
+    ]);
+    console.log('Subtracted user credits successfully after making a prompt');
+  };
 
   const handleMessageInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessageInput(event.target.value);
