@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { MainContainer, ChatContainer, MessageList, TypingIndicator, Message, MessageInput } from '@chatscope/chat-ui-kit-react';
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useSupabaseClient, useSession } from '@supabase/auth-helpers-react';
+import axios from 'axios';
 
-const API_KEY = "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";
+const API_KEY = "";
+const VIRUS_TOTAL_API_KEY = '';
+
+
 
 interface ChatWithGptProps {
   message: string;
-  urlSafetyScore: number | null;
-  phoneNumberSafetyScore: number | null;
 }
 
-const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message, urlSafetyScore, phoneNumberSafetyScore }) => {
-  const supabase = useSupabaseClient();
-  const session = useSession();
-
+const ChatWithGpt2: React.FC<ChatWithGptProps> = ({ message }) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [urlSafetyScore, setUrlSafetyScore] = useState<number | null>(null);
+  const [phoneNumberSafetyScore, setPhoneNumberSafetyScore] = useState<number | null>(null);
+
+  const { user } = useSession();
+  const supabase = useSupabaseClient();
 
   useEffect(() => {
     if (message) {
@@ -41,12 +45,23 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message, urlSafetyScore, phon
           sender: 'OpenAi',
         };
 
-        // Add user input, safety scores, and other data to Supabase
-        if (session?.user) {
-          await addPromptToSupabase(message, urlSafetyScore, phoneNumberSafetyScore);
+        // Extract hypothetical probability from the response
+        const probabilityMatch = content.match(/(\d+)%/);
+        if (probabilityMatch) {
+          const probability = parseInt(probabilityMatch[1]);
+          // Calculate URL safety score
+          const urlSafetyScore = (100 - probability) * 2.0;
+          setUrlSafetyScore(urlSafetyScore);
+          // Calculate phone number safety score
+          const phoneNumberSafetyScore = urlSafetyScore * 1.4;
+          setPhoneNumberSafetyScore(phoneNumberSafetyScore);
         }
 
         setMessages((prevMessages) => [...prevMessages, chatGPTResponse]);
+
+        // After receiving a response, add the prompt to the database
+        await createPromptEntry(message, urlSafetyScore, phoneNumberSafetyScore);
+
       }
     } catch (error) {
       console.error('Error processing message:', error);
@@ -76,26 +91,42 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message, urlSafetyScore, phon
     return response.json();
   }
 
-  async function addPromptToSupabase(message: string, urlSafetyScore: number | null, phoneNumberSafetyScore: number | null) {
-    try {
-      const { data, error } = await supabase.from('prompts').upsert([
-        {
-          user_id: session?.user?.id,
-          prompt_text: message,
-          urlSafetyScore: urlSafetyScore,
-          phoneNumberSafetyScore: phoneNumberSafetyScore,
-        },
-      ]);
+  // Function to add the prompt to the database
+  const createPromptEntry = async (text: string, urlSafetyScore: number | null, phoneNumberSafetyScore: number | null) => {
+    if (user) {
+      try {
+        const urls = extractUrls(text);
+        const phoneNumbers = extractPhoneNumbers(text);
 
-      if (error) {
-        console.error('Error adding prompt to Supabase:', error.message);
-      } else {
-        console.log('Prompt added to Supabase successfully.');
+        await supabase.from('proompts').upsert([
+          {
+            user_id: user.id,
+            prompt_text: text,
+            urlSafetyScore: urlSafetyScore,
+            phoneNumberSafetyScore: phoneNumberSafetyScore,
+            url: urls,
+            phone_number: phoneNumbers,
+          },
+        ], );
+
+        console.log('Prompt entry created successfully.');
+      } catch (error) {
+        console.error('Error creating prompt entry:', error.message);
       }
-    } catch (error) {
-      console.error('Error adding prompt to Supabase:', error.message);
     }
-  }
+  };
+
+  const extractUrls = (text: string) => {
+    const urlPattern = /(https?:\/\/[^\s]+)/g;
+    const matches = text.match(urlPattern);
+    return matches || [];
+  };
+
+  const extractPhoneNumbers = (text: string) => {
+    const phonePattern = /(?:\+?\d{1,3}[-.●])?\(?\d{3}\)?[-.●\s]?\d{3}[-.●\s]?\d{4}/g;
+    const matches = text.match(phonePattern);
+    return matches || [];
+  };
 
   return (
     <div className='w-full max-w-screen-lg mx-auto p-4 text-center'>
@@ -110,6 +141,12 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message, urlSafetyScore, phon
               {messages.map((message, i) => {
                 return <Message key={i} model={message} />;
               })}
+              {urlSafetyScore !== null && phoneNumberSafetyScore !== null && (
+                <div className="mt-4">
+                  <p className="text-lg font-semibold">URL Safety Score: {urlSafetyScore.toFixed(2)}%</p>
+                  <p className="text-lg font-semibold">Phone Number Safety Score: {phoneNumberSafetyScore.toFixed(2)}%</p>
+                </div>
+              )}
             </MessageList>
             <MessageInput
               placeholder="Send a Message"
@@ -123,4 +160,4 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message, urlSafetyScore, phon
   );
 };
 
-export default ChatWithGpt;
+export default ChatWithGpt2;
