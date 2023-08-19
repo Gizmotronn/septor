@@ -6,7 +6,7 @@ import axios from 'axios';
 const API_KEY = "";
 const VIRUS_TOTAL_API_KEY = '';
 
-
+// const API_KEY = "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";
 
 interface ChatWithGptProps {
   message: string;

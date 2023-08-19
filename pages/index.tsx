@@ -7,6 +7,7 @@ import GptBot from "../components/Proompts/Message";
 import Login from "./login";
 import PromptCheckPage from "./tests/PromptCheck";
 import ChatWithGpt2 from "../components/Core/GptUpsert";
+import UserQueriesTable from "../components/Proompts/ProomptList";
 
 export default function Home() {
     const session = useSession();
@@ -23,6 +24,7 @@ export default function Home() {
         return (
             <>
                 <PromptCheckPage />
+                <UserQueriesTable />
             </>
         )
     }

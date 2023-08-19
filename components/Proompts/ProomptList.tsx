@@ -1,57 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
-interface Prompt {
-  id: number;
-  prompt_text: string;
-  user_id: string;
-  urls: string[];
-  phone_numbers: string[];
-  created_at: string;
-}
-
-const PromptsList: React.FC = () => {
+const UserQueriesTable: React.FC = () => {
   const supabase = useSupabaseClient();
   const session = useSession();
-
-  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [userQueries, setUserQueries] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchPrompts();
-  }, []);
+    const fetchUserQueries = async () => {
+      if (session?.user) {
+        const { data, error } = await supabase
+          .from('proompts')
+          .select('id, prompt_text, urlSafetyScore, created_at')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false });
 
-  const fetchPrompts = async () => {
-    if (session) {
-      const { data, error } = await supabase
-        .from('proompts')
-        .select('*')
-        .eq('user_id', session?.user?.id)
-        .order('created_at', { ascending: false });
-      if (!error && data) {
-        setPrompts(data);
+        if (error) {
+          console.error('Error fetching user queries:', error.message);
+        } else if (data) {
+          setUserQueries(data);
+        }
       }
-    }
-  };
+    };
+
+    fetchUserQueries();
+  }, [session]);
 
   return (
-    <div>
-      <h2>Your Prompts</h2>
-      {prompts.length === 0 ? (
-        <p>No prompts available.</p>
-      ) : (
-        <ul>
-          {prompts.map((prompt) => (
-            <li key={prompt.id}>
-              <h3>{prompt.prompt_text}</h3>
-              <p>Created at: {prompt.created_at}</p>
-              <p>URLs: {prompt.urls.join(', ')}</p>
-              <p>Phone Numbers: {prompt.phone_numbers.join(', ')}</p>
-            </li>
+    <div className="w-full max-w-screen-lg mx-auto p-4">
+      <h2 className="text-3xl font-semibold mb-4">Your Queries</h2>
+      <table className="min-w-full border-collapse border border-gray-300">
+        <thead>
+          <tr>
+            <th className="p-2 border border-gray-300">Query</th>
+            <th className="p-2 border border-gray-300">URL Safety Score</th>
+            <th className="p-2 border border-gray-300">Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {userQueries.map((query) => (
+            <tr key={query.id}>
+              <td className="p-2 border border-gray-300">{query.prompt_text}</td>
+              <td className="p-2 border border-gray-300">{query.urlSafetyScore}%</td>
+              <td className="p-2 border border-gray-300">
+                {new Date(query.created_at).toLocaleString()}
+              </td>
+            </tr>
           ))}
-        </ul>
-      )}
+        </tbody>
+      </table>
     </div>
   );
 };
 
-export default PromptsList;
+export default UserQueriesTable;

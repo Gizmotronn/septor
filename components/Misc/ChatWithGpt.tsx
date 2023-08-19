@@ -2,20 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { MainContainer, ChatContainer, MessageList, TypingIndicator, Message, MessageInput } from '@chatscope/chat-ui-kit-react';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
-const API_KEY = "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";
+const API_KEY = "sk-";
 
 interface ChatWithGptProps {
   message: string;
-  urlSafetyScore: number | null;
-  phoneNumberSafetyScore: number | null;
 }
 
-const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message, urlSafetyScore, phoneNumberSafetyScore }) => {
+const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
   const supabase = useSupabaseClient();
   const session = useSession();
 
   const [messages, setMessages] = useState<any[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [urlSafetyScore, setUrlSafetyScore] = useState<number | null>(null);
 
   useEffect(() => {
     if (message) {
@@ -41,9 +40,18 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message, urlSafetyScore, phon
           sender: 'OpenAi',
         };
 
-        // Add user input, safety scores, and other data to Supabase
+        // Extract hypothetical probability from the response
+        const probabilityMatch = content.match(/(\d+)%/);
+        if (probabilityMatch) {
+          const probability = parseInt(probabilityMatch[1]);
+          // Calculate URL safety score
+          const urlSafetyScore = (100 - probability) * 2.0;
+          setUrlSafetyScore(urlSafetyScore);
+        }
+
+        // Add user input and safety scores to Supabase
         if (session?.user) {
-          await addPromptToSupabase(message, urlSafetyScore, phoneNumberSafetyScore);
+          await addPromptToSupabase(message, urlSafetyScore);
         }
 
         setMessages((prevMessages) => [...prevMessages, chatGPTResponse]);
@@ -76,14 +84,13 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message, urlSafetyScore, phon
     return response.json();
   }
 
-  async function addPromptToSupabase(message: string, urlSafetyScore: number | null, phoneNumberSafetyScore: number | null) {
+  async function addPromptToSupabase(message: string, urlSafetyScore: number | null) {
     try {
-      const { data, error } = await supabase.from('prompts').upsert([
+      const { data, error } = await supabase.from('proompts').upsert([
         {
           user_id: session?.user?.id,
           prompt_text: message,
           urlSafetyScore: urlSafetyScore,
-          phoneNumberSafetyScore: phoneNumberSafetyScore,
         },
       ]);
 
@@ -110,6 +117,11 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message, urlSafetyScore, phon
               {messages.map((message, i) => {
                 return <Message key={i} model={message} />;
               })}
+              {urlSafetyScore !== null && (
+                <div className="mt-4">
+                  <p className="text-lg font-semibold">URL Safety Score: {urlSafetyScore.toFixed(2)}%</p>
+                </div>
+              )}
             </MessageList>
             <MessageInput
               placeholder="Send a Message"
