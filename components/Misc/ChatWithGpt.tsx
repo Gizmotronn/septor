@@ -15,6 +15,7 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [urlSafetyScore, setUrlSafetyScore] = useState<number | null>(null);
+  const [totalUrlSafetyScore, setTotalUrlSafetyScore] = useState<number | null>(null);
 
   useEffect(() => {
     if (message) {
@@ -45,13 +46,18 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
         if (probabilityMatch) {
           const probability = parseInt(probabilityMatch[1]);
           // Calculate URL safety score
-          const urlSafetyScore = (100 - probability) * 2.0;
-          setUrlSafetyScore(urlSafetyScore);
-        }
+          const newUrlSafetyScore = (100 - probability) * 2.0;
 
-        // Add user input and safety scores to Supabase
-        if (session?.user) {
-          await addPromptToSupabase(message, urlSafetyScore);
+          // Add to the total URL safety score
+          setTotalUrlSafetyScore((prevTotal) =>
+            prevTotal !== null ? prevTotal + newUrlSafetyScore : newUrlSafetyScore
+          );
+          setUrlSafetyScore(newUrlSafetyScore);
+
+          // Add user input and safety scores to Supabase
+          if (session?.user) {
+            await addPromptToSupabase(message, newUrlSafetyScore);
+          }
         }
 
         setMessages((prevMessages) => [...prevMessages, chatGPTResponse]);
@@ -84,13 +90,13 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
     return response.json();
   }
 
-  async function addPromptToSupabase(message: string, urlSafetyScore: number | null) {
+  async function addPromptToSupabase(message: string, newUrlSafetyScore: number) {
     try {
       const { data, error } = await supabase.from('proompts').upsert([
         {
           user_id: session?.user?.id,
           prompt_text: message,
-          urlSafetyScore: urlSafetyScore,
+          urlSafetyScore: newUrlSafetyScore,
         },
       ]);
 
@@ -112,14 +118,14 @@ const ChatWithGpt: React.FC<ChatWithGptProps> = ({ message }) => {
             <MessageList
               scrollBehavior="smooth"
               typingIndicator={isTyping ? <TypingIndicator content="ChatGPT is typing" /> : null}
-              className="max-h-64 overflow-y-auto rounded bg-white p-2"
+              className="max-h-128 overflow-y-auto rounded bg-white p-2"
             >
               {messages.map((message, i) => {
                 return <Message key={i} model={message} />;
               })}
               {urlSafetyScore !== null && (
                 <div className="mt-4">
-                  <p className="text-lg font-semibold">URL Safety Score: {urlSafetyScore.toFixed(2)}%</p>
+                  <p className="text-lg font-semibold">URL Scam Risk: {urlSafetyScore.toFixed(2)}%</p>
                 </div>
               )}
             </MessageList>
